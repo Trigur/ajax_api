@@ -253,130 +253,6 @@ class Ajax_api extends MY_Controller {
 
     /******************************************************/
 
-    public function _checkCaptcha($captchaValue)
-    {
-        $secret = '6Lf2jSIUAAAAAOxoH6gRWPR9VP-ti9ZcZ8VdZ22X';
-
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, 'https://www.google.com/recaptcha/api/siteverify');
-        curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 10);
-        curl_setopt($curl, CURLOPT_TIMEOUT, 10);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-
-        $postData = [
-            'secret'   => $secret,
-            'response' => $captchaValue,
-        ];
-
-        $postDataBuilded = http_build_query($postData);
-        curl_setopt($curl, CURLOPT_POST, 1);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $postDataBuilded);
-
-        $requestResult = curl_exec($curl);
-        curl_close($curl);
-
-        $requestResult = json_decode($requestResult, true);
-
-        return ($requestResult['success'] == true);
-    }
-
-    public function _checkCommentPageId($str)
-    {
-        $commentPageId = 1236;
-        $this->form_validation->set_message('_checkCommentPageId', lang('Техническая ошибка. Пожалуйста обновить страницу.', 'ajax_api'));
-
-        return ($commentPageId === (int)$str) ? true : false;
-    }
-
-    public function comment()
-    {
-        if (! $this->input->is_ajax_request()) {
-            $this->core->error_404();
-        }
-
-        $fields = [
-            [
-                'field' => 'comment_item_id',
-                'label' => lang('', 'ajax'),
-                'rules' => 'callback__checkCommentPageId',
-            ],
-            [
-                'field' => 'comment_author',
-                'label' => lang('Имя', 'ajax'),
-                'rules' => 'strip_tags|trim|required|xss_clean|min_length[2]|max_length[50]',
-            ],
-            [
-                'field' => 'comment_email',
-                'label' => lang('Электронная почта', 'ajax'),
-                'rules' => 'strip_tags|trim|required|xss_clean|min_length[6]|max_length[50]||valid_email',
-            ],
-            [
-                'field' => 'comment_text',
-                'label' => lang('Текст сообщения', 'ajax'),
-                'rules' => 'strip_tags|trim|required|max_length[500]',
-            ],
-            [
-                'field' => 'g-recaptcha-response',
-                'label' => lang('Капча', 'ajax'),
-                'rules' => 'callback__checkCaptcha',
-            ]
-        ];
-
-
-        $message = lang('Ваше сообщение будет опубликовано после модерации администратором.', 'ajax_api');
-        $message .= '<script>setTimeout(function(){document.location.href=document.location.pathname},2000)</script>';
-
-        $config = [
-            'sendEmail'      => false,
-            'errorType'      => 'fields',
-            'successMessage' => $message,
-            'beforeSend'     => function($data){
-                $this->load->module('comments')->addPost();
-            }
-        ];
-
-        return $this->_ajax_controller($config, $fields);
-    }
-
-    public function commentsList()
-    {
-        $commentPageId = 1236;
-        $page = $this->input->get('p');
-        $page = $page - 1;
-        $page = max(0, $page);
-        return $this->load->module('comments')->show($commentPageId, $page);
-    }
-
-
-    private function _uploadReceptionImage(&$data)
-    {
-        $fileUploadResult = $this->load->module('ajax_api/files_uploader')->_upload(
-            ['reception', 'image'],
-            [
-                'allowedFileTypes' => [
-                    'image/jpeg',
-                    'image/png',
-                ],
-                'image' => [
-                    'minWidth'  => 260,
-                    'maxWidth'  => 1920,
-                    'minHeight' => 260,
-                    'maxHeight' => 1920,
-                    'quality'   => 100,
-                ],
-            ]
-        );
-        if ($fileUploadResult) {
-            if ($fileUploadResult['status'] == 'error') {
-                exit($this->_error(['reception[image]' => $fileUploadResult['message']], 'fields'));
-            } else {
-                $data['image'] = $fileUploadResult['path'];
-            }
-        } else {
-            $data['image'] = 'нет';
-        }
-    }
-
     public function reception()
     {
         if (! $this->input->is_ajax_request()) {
@@ -404,31 +280,15 @@ class Ajax_api extends MY_Controller {
                 'label' => lang('Текст сообщения', 'ajax'),
                 'rules' => 'strip_tags|trim|required|max_length[500]',
             ],
-            [
-                'field' => 'g-recaptcha-response',
-                'label' => lang('Капча', 'ajax'),
-                'rules' => 'callback__checkCaptcha',
-            ]
         ];
 
         $config = [
             'mark' => 'review',
             'errorType' => 'fields',
             'fieldsArrays' => ['review'],
-            'beforeSend' => '_uploadReceptionImage',
         ];
 
         return $this->_ajax_controller($config, $fields);
-    }
-
-    public function moreNews($categoryId)
-    {
-        return $this->load->module('project/news')->_more($categoryId);
-    }
-
-    public function moreEvents()
-    {
-        return $this->load->module('project/events')->_more();
     }
 
     /******************************************************/
