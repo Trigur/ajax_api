@@ -1,18 +1,12 @@
 {
-  "name": "trigur/image_resize",
+  "name": "trigur/ajax_api",
   "description": "ImageCMS module",
   "keywords": [
-    "ImageCMS",
-    "module",
-    "image resize",
-    "image crop",
-    "image scale",
-    "imagick"
   ],
-  "homepage": "https://github.com/Trigur/image_resize",
+  "homepage": "https://github.com/Trigur/ajax_api",
   "type": "imagecms-module",    
   "extra": {
-    "installer-name": "image_resize"
+    "installer-name": "ajax_api"
   },
   "require": {
     "php": ">=5.5",
