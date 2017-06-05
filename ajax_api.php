@@ -171,7 +171,7 @@ class Ajax_api extends MY_Controller {
                 $fieldsArray = array_merge($fieldsArray, $this->input->post($arrayName));
             }
 
-            $data = $fields_array;
+            $data = $fieldsArray;
 
         } else {
 
