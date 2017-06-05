@@ -183,7 +183,6 @@ class Ajax_api extends MY_Controller {
         }
 
         $data['site'] = site_url();
-        $this->ajax_m->log($config['mark'], serialize($data));
 
         if ($config['beforeSend']) {
             if (is_callable($config['beforeSend'])) {
@@ -205,6 +204,8 @@ class Ajax_api extends MY_Controller {
                 }
             }
         }
+        
+        $this->ajax_m->log($config['mark'], serialize($data));
 
         if (! $config['sendEmail']) {
             return $this->_success($config['successMessage']);
